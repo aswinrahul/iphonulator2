@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPHONULATOR — Vite</title>
+
+  <!-- Apple-style font -->
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #0f172a;
+      --card: #0b1220;
+      --muted: #94a3b8;
+      --accent: #06b6d4;
+      --glass: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin:0; background:linear-gradient(180deg,#071129 0%, #071b2a 100%); 
+      color:#e6eef6; min-height:100vh;
+    }
+    .container{max-width:1200px;margin:28px auto;padding:20px}
+    header{display:flex;gap:16px;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700}
+    h1{margin:0;font-size:26px;font-weight:700;letter-spacing:0.5px;}
+    .sub{color:var(--muted);font-size:14px;margin-top:4px}
+    .controls{display:flex;gap:12px;align-items:center;margin:18px 0}
+    input.search{
+      flex:1;
+      padding:12px 20px;
+      font-size:16px;
+      border-radius:30px;
+      border:none;
+      background: var(--glass);
+      color:#fff;
+      outline:none;
+      transition: 0.3s ease, box-shadow 0.3s ease;
+    }
+    input.search:focus-visible{
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 0 10px var(--accent);
+    }
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;margin-top:16px}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); 
+      border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.03);
+      display:flex;flex-direction:column;gap:12px;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      cursor:pointer;
+    }
+    .card:hover{transform: translateY(-6px); box-shadow: 0 10px 28px rgba(0,0,0,0.35);}
+    .thumb{height:170px;border-radius:12px;background:#071028;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .thumb img{max-width:100%;max-height:100%;object-fit:contain}
+    .meta{display:flex;justify-content:space-between;align-items:center}
+    .title{font-weight:700;font-size:16px;}
+    .price{background:rgba(255,255,255,0.03);padding:6px 10px;border-radius:10px;font-weight:700;font-size:14px}
+    .desc{color:var(--muted);font-size:13px;height:42px;overflow:hidden}
+    .features{display:flex;flex-wrap:wrap;gap:6px}
+    .chip{background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:12px;font-size:12px;color:var(--muted)}
+    .actions{display:flex;gap:8px;margin-top:auto}
+    .compare-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:linear-gradient(90deg,#071025e6,#071b2ae0);padding:14px 18px;border-radius:16px;box-shadow:0 6px 24px rgba(2,6,23,0.6);display:flex;gap:14px;align-items:center;border:1px solid rgba(255,255,255,0.04)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(3,7,18,0.6);display:flex;align-items:center;justify-content:center;opacity:0; transition: opacity 0.3s ease;}
+    .modal-backdrop.show{opacity:1;}
+    .modal{background:linear-gradient(180deg,#071126,#0a1330);padding:22px;border-radius:16px;max-width:900px;width:96%;border:1px solid rgba(255,255,255,0.04);transform: translateY(50px); opacity:0; transition: all 0.35s ease;}
+    .modal.show{transform: translateY(0); opacity:1;}
+    .table{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .table .cell{padding:10px;border-radius:10px}
+    .table .head{background:rgba(255,255,255,0.03);font-weight:700}
+    .empty{color:var(--muted);text-align:center;padding:18px}
+    @media (max-width:720px){.table{grid-template-columns:1fr 1fr}}
+    footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
+    .gradient-btn{
+      padding: 10px 18px;
+      border-radius: 30px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(90deg, #06b6d4, #7c3aed);
+      color: #021426;
+      transition: all 0.3s ease, transform 0.3s ease;
+      background-size: 200% 100%;
+    }
+    .gradient-btn:hover{
+      background-position: right center;
+      transform: scale(1.05);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">IR</div>
+        <div>
+          <h1>IPHONULATOR</h1>
+          <div class="sub">Browse for iPhone details</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="controls">
+      <input class="search" id="search" placeholder="Search phones "/>
+    </div>
+
+    <main>
+      <div class="grid" id="grid"></div>
+    </main>
+
+    <div id="compareBar" class="compare-bar" style="display:none">
+      <div id="compareSelected">2 phones selected</div>
+      <button id="compareBtn" class="gradient-btn">Compare</button>
+      <button id="clearCompare" class="gradient-btn">Clear</button>
+    </div>
+
+    <footer>Built for demo. For learn Vite.</footer>
+  </div>
+
+  <div id="modalRoot" style="display:none"></div>
+
+  <script type="module">
+    const samplePhones = [
+  { id: 'p10', name: 'iPhone X', brand: 'Apple', price: '₹89,000 (approx. launch in India — 256GB availability varied)', img: 'Apple-iPhone-x.jpg', short: 'Anniversary model: OLED, Face ID — first notch iPhone.', features: { ram: '3 GB', storage: '64 / 256 GB', battery: '2716 mAh', camera: '12 MP + 12 MP', display: '5.8" OLED' } },
+  { id: 'p11', name: 'iPhone 11', brand: 'Apple', price: '₹64,900 (128GB launch price in India — approximate)', img: 'Apple-iPhone-11.jpg', short: 'Reliable all-rounder with dual camera and strong battery life.', features: { ram: '4 GB', storage: '64 / 128 / 256 GB', battery: '3110 mAh', camera: '12 MP + 12 MP', display: '6.1" LCD' } },
+  { id: 'p11pro', name: 'iPhone 11 Pro', brand: 'Apple', price: '₹99,900 (64GB launch — approximate)', img: 'Apple-iPhone-11-Pro.jpg', short: 'Compact Pro with triple cameras and OLED screen.', features: { ram: '4 GB', storage: '64 / 256 / 512 GB', battery: '3046 mAh', camera: '12 MP + 12 MP + 12 MP', display: '5.8" OLED' } },
+  { id: 'p11promax', name: 'iPhone 11 Pro Max', brand: 'Apple', price: '₹109,900 (64GB launch — approximate)', img: 'Apple-iPhone-11-Pro.jpg', short: 'Big Pro with best battery and flagship camera for its generation.', features: { ram: '4 GB', storage: '64 / 256 / 512 GB', battery: '3969 mAh', camera: '12 MP + 12 MP + 12 MP', display: '6.5" OLED' } },
+  { id: 'p12', name: 'iPhone 12', brand: 'Apple', price: '₹79,900 (64GB launch in India — approximate)', img: 'apple-iphone-12.jpg', short: '5G introduction with OLED on the standard model.', features: { ram: '4 GB', storage: '64 / 128 / 256 GB', battery: '2815 mAh', camera: '12 MP + 12 MP', display: '6.1" OLED 60Hz' } },
+  { id: 'p12mini', name: 'iPhone 12 mini', brand: 'Apple', price: '₹69,900 (64GB launch — approximate)', img: 'apple-iphone-12mini.jpg', short: 'Small form factor with flagship internals.', features: { ram: '4 GB', storage: '64 / 128 / 256 GB', battery: '2227 mAh', camera: '12 MP + 12 MP', display: '5.4" OLED' } },
+  { id: 'p12pro', name: 'iPhone 12 Pro', brand: 'Apple', price: '₹1,19,900 (128GB — approximate launch pricing varies by region)', img: 'apple-iphone-12pro.jpg', short: 'Pro-tier with LiDAR and triple cameras.', features: { ram: '6 GB', storage: '128 / 256 / 512 GB', battery: '2815 mAh', camera: '12 MP + 12 MP + 12 MP', display: '6.1" OLED 60Hz' } },
+  { id: 'p12promax', name: 'iPhone 12 Pro Max', brand: 'Apple', price: '₹1,29,900 (128GB — approximate)', img: 'apple-iphone-12pro.jpg', short: 'Largest 12-series phone with best optical zoom of its generation.', features: { ram: '6 GB', storage: '128 / 256 / 512 GB', battery: '3687 mAh', camera: '12 MP + 12 MP + 12 MP', display: '6.7" OLED' } },
+  { id: 'p13', name: 'iPhone 13', brand: 'Apple', price: '₹69,900 (128GB launch India — approximate)', img: 'apple-iphone-13.jpg', short: 'Refined design with improved battery and 12/13MP camera tuneups.', features: { ram: '4 GB', storage: '128 / 256 / 512 GB', battery: '3240 mAh', camera: '12 MP + 12 MP', display: '6.1" OLED 60Hz' } },
+  { id: 'p13mini', name: 'iPhone 13 mini', brand: 'Apple', price: '₹59,900 (128GB — approx)', img: 'apple-iphone-13mini.jpg', short: 'Small flagship with good battery for its size.', features: { ram: '4 GB', storage: '128 / 256 / 512 GB', battery: '2438 mAh', camera: '12 MP + 12 MP', display: '5.4" OLED' } },
+  { id: 'p13pro', name: 'iPhone 13 Pro', brand: 'Apple', price: '₹1,19,900 (128GB — approximate launch)', img: 'apple-iphone-13pro.jpg', short: '120Hz ProMotion introduced on Pro models; strong camera upgrades.', features: { ram: '6 GB', storage: '128 / 256 / 512 GB / 1 TB', battery: '3095 mAh', camera: '12 MP + 12 MP + 12 MP', display: '6.1" OLED 120Hz' } },
+  { id: 'p13promax', name: 'iPhone 13 Pro Max', brand: 'Apple', price: '₹1,29,900 (128GB — approximate launch)', img: 'apple-iphone-13pro.jpg', short: 'Largest with best battery life in the 13 family.', features: { ram: '6 GB', storage: '128 / 256 / 512 GB / 1 TB', battery: '4352 mAh', camera: '12 MP + 12 MP + 12 MP', display: '6.7" OLED 120Hz' } },
+  { id: 'p14', name: 'iPhone 14', brand: 'Apple', price: '₹79,900 (128GB — launch India approximated)', img: 'apple-iphone-14-plus-3.jpg', short: 'Continued refinement; better video and battery improvements.', features: { ram: '6 GB', storage: '128 / 256 / 512 GB', battery: '3279 mAh', camera: '12 MP + 12 MP', display: '6.1" OLED 60Hz' } },
+  { id: 'p14plus', name: 'iPhone 14 Plus', brand: 'Apple', price: '₹89,900 (128GB — approximate launch India)', img: 'apple-iphone-14-plus-3.jpg', short: 'Large-screen non-Pro model with big battery.', features: { ram: '6 GB', storage: '128 / 256 / 512 GB', battery: '4325 mAh', camera: '12 MP + 12 MP', display: '6.7" OLED 60Hz' } },
+  { id: 'p14pro', name: 'iPhone 14 Pro', brand: 'Apple', price: '₹1,29,900 (128GB — approx launch India)', img: 'apple-iphone-14pro.jpg', short: 'Dynamic Island debut and big camera sensor upgrade.', features: { ram: '6 GB', storage: '128 / 256 / 512 GB / 1 TB', battery: '3200 mAh (approx)', camera: '48 MP + 12 MP + 12 MP', display: '6.1" OLED 120Hz' } },
+  { id: 'p14promax', name: 'iPhone 14 Pro Max', brand: 'Apple', price: '₹1,39,900 (128GB — approx launch India)', img: 'apple-iphone-14pro.jpg', short: 'Top-of-line 14-series device with improved battery & cameras.', features: { ram: '6 GB', storage: '128 / 256 / 512 GB / 1 TB', battery: '4323 mAh', camera: '48 MP + 12 MP + 12 MP', display: '6.7" OLED 120Hz' } },
+  { id: 'p15', name: 'iPhone 15', brand: 'Apple', price: '₹79,900 (128GB) / ₹89,900 (256GB) — approximate launch India', img: '.jpg', short: 'Dynamic Island, 48 MP main camera, USB-C introduced for the line.', features: { ram: '6 GB', storage: '128 / 256 / 512 GB', battery: '3349 mAh', camera: '48 MP + 12 MP', display: '6.1" OLED 60Hz' } },
+  { id: 'p15plus', name: 'iPhone 15 Plus', brand: 'Apple', price: '₹89,900 (128GB) / ₹99,900 (256GB) — approx launch India', img: 'apple-iphone-15-plus-1.jpg', short: 'Bigger battery and 6.7" screen; same chipset as base.', features: { ram: '6 GB', storage: '128 / 256 / 512 GB', battery: '4383 mAh', camera: '48 MP + 12 MP', display: '6.7" OLED 60Hz' } },
+  { id: 'p15pro', name: 'iPhone 15 Pro', brand: 'Apple', price: '₹1,34,900 (128GB) / ₹1,54,900 (1TB) — approx India launch', img: 'iphone_15 pro.jpg', short: 'Titanium frame, A17 Pro (in some regions), pro camera features.', features: { ram: '8 GB', storage: '128 / 256 / 512 GB / 1 TB', battery: '3274 mAh', camera: '48 MP + 12 MP + 12 MP', display: '6.1" OLED 120Hz' } },
+  { id: 'p15promax', name: 'iPhone 15 Pro Max', brand: 'Apple', price: '₹1,59,900 (256GB) / ₹1,99,900 (1TB) — approx India launch', img: 'iphone_15 pro.jpg', short: 'Largest Pro with best zoom and battery for the generation.', features: { ram: '8 GB', storage: '256 / 512 GB / 1 TB', battery: '4422 mAh', camera: '48 MP + 12 MP + 12 MP (periscope / improved zoom on Max)', display: '6.7" OLED 120Hz' } },
+ { id: 'p16', name: 'iPhone 16', brand: 'Apple', price: '₹(varies)', img: 'iphone_16.jpg', short: 'Next-gen base iPhone (speculative).', features: { ram: '8 GB', storage: '128 / 256 / 512 GB', battery: '~3500 mAh', camera: '48 MP + 12 MP', display: '6.1" OLED 120Hz' } },
+  { id: 'p16plus', name: 'iPhone 16 Plus', brand: 'Apple', price: '₹(varies)', img: 'iphone_16.jpg', short: 'Large-screen non-Pro 16 variant.', features: { ram: '8 GB', storage: '128 / 256 / 512 GB', battery: '~4600 mAh', camera: '48 MP + 12 MP', display: '6.7" OLED 120Hz' } },
+  { id: 'p16pro', name: 'iPhone 16 Pro', brand: 'Apple', price: '₹(varies)', img: 'iphone_16 pro.jpg', short: 'Pro-tier 16 with upgraded internals.', features: { ram: '8–12 GB', storage: '256 / 512 GB / 1 TB', battery: '~3900–4100 mAh', camera: '48 MP + 48 MP + 48 MP', display: '6.3" OLED 120Hz' } },
+  { id: 'p16promax', name: 'iPhone 16 Pro Max', brand: 'Apple', price: '₹(varies)', img: 'iphone_16 pro.jpg', short: 'Top 16 model with biggest screen & battery.', features: { ram: '8–12 GB', storage: '256 / 512 GB / 1 TB', battery: '~5000 mAh', camera: '48 MP + 48 MP + 48 MP', display: '6.9" OLED 120Hz' } },
+  { id: 'p17', name: 'iPhone 17', brand: 'Apple', price: '₹82,900 / ₹1,02,900', img: 'iphone_17.jpg', short: 'Base iPhone 17: A19, dual cameras.', features: { ram: '8 GB', storage: '256 / 512 GB', battery: '3692 mAh', camera: '48 MP + 12 MP', display: '6.3" OLED 120Hz' } },
+  { id: 'p17pro', name: 'iPhone 17 Pro', brand: 'Apple', price: '₹1,34,900 / ₹1,54,900 / ₹1,74,900', img: 'iphone_17 pro.jpg', short: 'Pro with stronger chipset, triple cameras.', features: { ram: '12 GB', storage: '256 / 512 GB / 1 TB', battery: '4252 mAh', camera: '48 MP + 48 MP + 48 MP', display: '6.3" OLED 120Hz' } },
+  { id: 'p17promax', name: 'iPhone 17 Pro Max', brand: 'Apple', price: '₹1,49,900 / ₹1,69,900 / ₹1,89,900 / ₹2,29,900', img: 'iphone_17 pro.jpg', short: 'Top-tier 17 Pro Max: biggest screen & best battery.', features: { ram: '12 GB', storage: '256 / 512 GB / 1 TB / 2 TB', battery: '5088 mAh', camera: '48 MP + 48 MP + 48 MP', display: '6.9" OLED 120Hz' } },
+  { id: 'p17air', name: 'iPhone 17 Air', brand: 'Apple', price: '₹1,19,900 / ₹1,39,900', img: 'iphone_air.jpg', short: 'Lighter “Air” variant — slimmer chassis.', features: { ram: '8 GB', storage: '256 / 512 GB / 1 TB', battery: '≈ 3149 mAh', camera: '48 MP', display: '6.5" OLED 120Hz' } }
+]; 
+    
+    let phones = [];
+    let filtered = [];
+    let compareSet = new Set();
+
+    const grid = document.getElementById('grid');
+    const search = document.getElementById('search');
+    const compareBar = document.getElementById('compareBar');
+    const compareBtn = document.getElementById('compareBtn');
+    const compareSelected = document.getElementById('compareSelected');
+    const clearCompare = document.getElementById('clearCompare');
+    const modalRoot = document.getElementById('modalRoot');
+
+    function loadData(data){
+      phones = data.slice();
+      filtered = phones.slice();
+      renderGrid();
+    }
+
+    function renderGrid(){
+      grid.innerHTML = '';
+      if(!filtered.length){ grid.innerHTML = '<div class="empty">No phones found</div>'; return }
+      for(const p of filtered){
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="thumb"><img src="${p.img}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'"></div>
+          <div class="meta"><div><div class="title">${p.name}</div><div class="sub" style="font-size:12px;color:var(--muted)">${p.brand}</div></div><div class="price">${p.price}</div></div>
+          <div class="desc">${p.short}</div>
+          <div class="features">
+            <div class="chip">${p.features.ram}</div>
+            <div class="chip">${p.features.storage}</div>
+            <div class="chip">${p.features.battery}</div>
+            <div class="chip">${p.features.display}</div>
+          </div>
+          <div class="actions">
+            <button data-id="${p.id}" class="toggle-compare gradient-btn">${compareSet.has(p.id)?'Remove':'Compare'}</button>
+          </div>
+        `;
+        card.onclick = (e) => {
+          if(e.target.tagName !== 'BUTTON'){
+            openModal(p.id);
+          }
+        };
+        grid.appendChild(card);
+      }
+      attachCardListeners();
+    }
+
+    function attachCardListeners(){
+      document.querySelectorAll('.card .toggle-compare').forEach(btn=>btn.onclick=e=>{
+        const id=e.currentTarget.dataset.id;
+        toggleCompare(id);
+        renderGrid();
+      });
+    }
+
+    search.addEventListener('input',()=>{
+      const q=search.value.trim().toLowerCase();
+      filtered = phones.filter(p=>{
+        if(!q) return true;
+        const hay = (p.name+' '+p.brand+' '+p.short+' '+Object.values(p.features).join(' ')).toLowerCase();
+        return hay.includes(q);
+      });
+      renderGrid();
+    });
+
+    function toggleCompare(id){
+      if(compareSet.has(id)) compareSet.delete(id);
+      else{ if(compareSet.size>=2){ alert('Select max 2'); return } compareSet.add(id) }
+      updateCompareBar();
+    }
+    function updateCompareBar(){
+      if(compareSet.size===0){ compareBar.style.display='none'; return }
+      compareBar.style.display='flex';
+      compareSelected.textContent = `${compareSet.size} phone(s) selected`;
+    }
+
+    compareBtn.onclick=()=>{ if(compareSet.size<2){alert('Select 2 phones'); return} showComparison(...Array.from(compareSet)) };
+    clearCompare.onclick=()=>{ compareSet.clear(); updateCompareBar(); renderGrid(); }
+
+    function openModal(id){
+      const p = phones.find(x=>x.id===id); if(!p) return;
+      modalRoot.style.display='block';
+      modalRoot.innerHTML=`
+        <div class="modal-backdrop">
+          <div class="modal">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:120px">
+                <img src="${p.img}" alt="${p.name}" style="max-width:100%" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'" />
+              </div>
+              <div>
+                <h2 style="margin:0">${p.name}</h2>
+                <div class="sub">${p.brand} • ${p.price}</div>
+                <p style="color:var(--muted)">${p.short}</p>
+                <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+                  ${Object.entries(p.features).map(([k,v])=>`<div class="chip">${k.toUpperCase()}: ${v}</div>`).join('')}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:16px">
+              <button class="gradient-btn modal-compare-btn">${compareSet.has(p.id)?'Remove':'Add'} Compare</button>
+              <button class="gradient-btn modal-close-btn">Close</button>
+            </div>
+          </div>
+        </div>
+      `;
+      const backdrop = modalRoot.querySelector('.modal-backdrop');
+      const modal = modalRoot.querySelector('.modal');
+      setTimeout(()=>{ backdrop.classList.add('show'); modal.classList.add('show'); }, 10);
+      backdrop.onclick = closeModal;
+      modal.onclick = e=>e.stopPropagation();
+
+      // Attach modal button listeners dynamically
+      const modalCloseBtn = modalRoot.querySelector('.modal-close-btn');
+      if(modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+
+      const modalCompareBtn = modalRoot.querySelector('.modal-compare-btn');
+      if(modalCompareBtn){
+        modalCompareBtn.addEventListener('click', ()=>{
+          toggleCompare(p.id);
+          renderGrid();
+          closeModal();
+        });
+      }
+    }
+
+    function closeModal(){
+      const backdrop = modalRoot.querySelector('.modal-backdrop');
+      const modal = modalRoot.querySelector('.modal');
+      if(backdrop && modal){
+        modal.classList.remove('show');
+        backdrop.classList.remove('show');
+        setTimeout(()=>{ modalRoot.style.display='none'; }, 350);
+      }
+    }
+
+    function showComparison(aId,bId){
+      const [a,b] = [phones.find(x=>x.id===aId), phones.find(x=>x.id===bId)];
+      if(!a||!b) return;
+      modalRoot.style.display='block';
+      modalRoot.innerHTML=`
+        <div class="modal-backdrop">
+          <div class="modal">
+            <h3 style="margin-top:0">Compare phones</h3>
+            <div class="table">
+              <div class="cell head">Feature</div>
+              <div class="cell head">${a.name}<div style="font-size:12px;color:var(--muted)">${a.brand} • ${a.price}</div></div>
+              <div class="cell head">${b.name}<div style="font-size:12px;color:var(--muted)">${b.brand} • ${b.price}</div></div>
+              <div class="cell">Display</div><div class="cell">${a.features.display}</div><div class="cell">${b.features.display}</div>
+              <div class="cell">RAM</div><div class="cell">${a.features.ram}</div><div class="cell">${b.features.ram}</div>
+              <div class="cell">Storage</div><div class="cell">${a.features.storage}</div><div class="cell">${b.features.storage}</div>
+              <div class="cell">Battery</div><div class="cell">${a.features.battery}</div><div class="cell">${b.features.battery}</div>
+              <div class="cell">Camera</div><div class="cell">${a.features.camera}</div><div class="cell">${b.features.camera}</div>
+              <div class="cell">Notes</div><div class="cell">${a.short}</div><div class="cell">${b.short}</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="gradient-btn modal-close-btn">Close</button>
+            </div>
+          </div>
+        </div>
+      `;
+      const backdrop = modalRoot.querySelector('.modal-backdrop');
+      const modal = modalRoot.querySelector('.modal');
+      setTimeout(()=>{ backdrop.classList.add('show'); modal.classList.add('show'); }, 10);
+      backdrop.onclick = closeModal;
+      modal.onclick = e=>e.stopPropagation();
+
+      const modalCloseBtn = modalRoot.querySelector('.modal-close-btn');
+      if(modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+    }
+
+    loadData(samplePhones);
+    window.toggleCompare = toggleCompare;
+    window.renderGrid = renderGrid;
+  </script>
+</body>
+</html>
